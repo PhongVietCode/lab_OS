@@ -1,0 +1,1 @@
+void calc (char*input,int n);
