@@ -17,9 +17,6 @@ typedef struct {
 } movie_model;
 
 int accessSharedMem(movie_model *movie_record, int n){
-    // for(int i = 0 ;i < n;i++){
-    //     printf("movie %d , id: %d, rating :%f \n", i, movie_record[i].movieId, movie_record[i].rating);
-    // }
     movie_model *shm_main_movie_record;
     size_t numberElements = 1682;
     size_t segment_size = sizeof(movie_model) * numberElements;
