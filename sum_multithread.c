@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
     printf("%lld \n", sum);
     end_time = clock();
     printf("Run time: %f \n", ((double)(end_time - start_time) / CLOCKS_PER_SEC));
+    // multithread will have user time faster
     return 0;
 
 }
