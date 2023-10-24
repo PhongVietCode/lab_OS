@@ -25,9 +25,6 @@ int accessSharedMem(movie_model *movie_record, int n){
         perror("Fail access shared memory");
         return 1;
     }
-    else{
-        printf("Accessed Shared memory: %d \n", shmid);
-    }
     shm_main_movie_record = (movie_model*)shmat(shmid,NULL,0);
 
     if(shm_main_movie_record == (void *) - 1){
@@ -54,7 +51,7 @@ int accessSharedMem(movie_model *movie_record, int n){
     shmdt(shm_main_movie_record);
 }
 float movieCalRating(int i){
-    printf("child doing ===================\n");
+    // printf("child doing ===================\n");
     FILE *fptr;
     movie_model movie_record[2000];
     if(i == 0)
@@ -109,9 +106,6 @@ void deleteMem(){
         perror("Failed access shared memory");
         return;
     }
-    else{
-        printf("Accessed Shared memory: %d \n", shmid);
-    }
     if(shmctl(shmid, IPC_RMID, 0) == -1){
         perror("shmtcl error");
         return;
@@ -131,7 +125,7 @@ int main(int argc, char *argv[])
     }
     // parent code
     while((wpid = wait(&status)) > 0);
-    printf("Parent execute\n");
+    // printf("Parent execute\n");
     // read from share mem
     size_t numberElements = 1682;
     size_t segment_size = sizeof( movie_model) * numberElements;
@@ -143,20 +137,21 @@ int main(int argc, char *argv[])
         perror("Fail access shared memory");
         return 1;
     }
-    else{
-        printf("Accessed Shared memory: %d \n", shmid);
-    }
     shm_main_movie_record = ( movie_model*)shmat(shmid, 0 ,0);
 
     if(shm_main_movie_record == ( movie_model*) - 1){
         perror("Fail to attach share memory");
         exit(-1);
     }
-    for(int i = 0;i < 1682;i++){
-        printf("movie %d: .. id: %d.. rating: %f .. viewers: %d .. average rating: %f \n",i, shm_main_movie_record[i].movieId, shm_main_movie_record[i].rating, shm_main_movie_record[i].viewers, shm_main_movie_record[i].rating/shm_main_movie_record[i].viewers);
-    }
-    shmdt(shm_main_movie_record);
+    FILE* fp;
+    fp = fopen("average_rating.txt", "w");
 
+    for(int i = 0;i < 1682;i++){
+        fprintf(fp,"movie %d: id: %d - viewers : %d - average rating: %f \n",i + 1, shm_main_movie_record[i].movieId, shm_main_movie_record[i].viewers, shm_main_movie_record[i].rating/shm_main_movie_record[i].viewers  );
+    }
+    fclose(fp);
+    printf("Result is write in average_rating.txt \n");
+    shmdt(shm_main_movie_record);
     deleteMem();
     return 0;
 }
