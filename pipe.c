@@ -43,7 +43,7 @@ int main(int argc, char* argv[]){
     init();
     pid_t pid;
     pid = fork();
-    alarm(5);
+    alarm(10);
     if(pid == 0){
         // parent       
          while(1){
