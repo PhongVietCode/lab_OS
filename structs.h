@@ -11,6 +11,7 @@ struct pcb_t {
 				// and wishes to start
 	int burst_time;		// The amount of time that process requires
 				// to complete its job
+	int priority;
 	int pid;		// process id
 };
 

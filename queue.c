@@ -41,7 +41,13 @@ struct pcb_t * de_queue(struct pqueue_t * q) {
 	pthread_mutex_unlock(&(q->lock));
 	return proc;
 }
-
+struct pcb_t * de_queue_by_priority(struct pqueue_t* q,int timestamp,int proc_arrivalTime_array[]){
+	struct qitem_t * proc;
+	pthread_mutex_lock(&(q->lock));
+	
+	pthread_mutex_unlock(&(q->lock));
+	return proc->data;
+}
 /* Put PCB of a process to the queue. */
 void en_queue(struct pqueue_t * q, struct pcb_t * proc) {
 	// TODO: Update q->tail.

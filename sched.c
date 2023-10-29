@@ -11,18 +11,27 @@ static struct pqueue_t in_queue; // Queue for incomming processes
 static struct pqueue_t ready_queue; // Queue for ready processes
 
 static int load_done = 0;
-
+int num_proc = 0;
 static int timeslot; 	// The maximum amount of time a process is allowed
 			// to be run on CPU before being swapped out
 
 // Emulate the CPU
 void * cpu(void * arg) {
 	int timestamp = 0;
+	int proc_arrivalTime_array[num_proc];
+	int i = 0;
+	struct qitem_t *travel = ready_queue.head;
+	while(travel != NULL){
+		proc_arrivalTime_array[i++] = travel->data->arrival_time;
+		travel = travel->next;
+	}
+	i = 1;
 	/* Keep running until we have loaded all process from the input file
 	 * and there is no process in ready queue */
 	while (!load_done || !empty(&ready_queue)) {
-		/* Pickup the first process from the queue */
-		struct pcb_t * proc = de_queue(&ready_queue);
+		/* Pickup the process from the queue */
+		struct pcb_t * proc = de_queue_by_priority(&ready_queue,timestamp);
+		
 		if (proc == NULL) {
 			/* If there is no process in the queue then we
 			 * wait until the next time slice */
@@ -41,14 +50,7 @@ void * cpu(void * arg) {
 			// TODO: Calculate exec_time from process's PCB
 			
 			// YOUR CODE HERE
-			if(proc->burst_time > timeslot){
-				exec_time = timeslot;
-				proc->burst_time -= timeslot;
-			}
-			else{
-				exec_time = proc->burst_time;
-				proc->burst_time = 0;
-			}
+			
 			/* Emulate the execution of the process by using
 			 * 'usleep()' function */
 			usleep(exec_time * TIME_UNIT);
@@ -65,6 +67,8 @@ void * cpu(void * arg) {
 				free(proc);
 			}
 			else{
+				if(proc->priority > 0)
+					proc->priority--;
 				en_queue(&ready_queue, proc);
 			}
 			/* Track runtime status */
@@ -92,7 +96,6 @@ void * loader(void * arg) {
 
 /* Read the list of process to be executed from stdin */
 void load_task() {
-	int num_proc = 0;
 	scanf("%d %d\n", &timeslot, &num_proc);
 	int i;
 	for (i = 0; i < num_proc; i++) {

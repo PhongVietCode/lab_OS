@@ -9,7 +9,7 @@ void initialize_queue(struct pqueue_t * q);
 
 /* Get a process from a queue */
 struct pcb_t * de_queue(struct pqueue_t * q);
-
+struct pcb_t * de_queue_by_priority(struct pqueue_t *q, int timestamp, int proc_arrivalTime_array[]);
 /* Put a process into a queue */
 void en_queue(struct pqueue_t * q, struct pcb_t * proc);
 
