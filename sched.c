@@ -18,39 +18,39 @@ static int timeslot; 	// The maximum amount of time a process is allowed
 // Emulate the CPU
 void * cpu(void * arg) {
 	int timestamp = 0;
-	int proc_arrivalTime_array[num_proc];
-	int i = 0;
-	struct qitem_t *travel = ready_queue.head;
-	while(travel != NULL){
-		proc_arrivalTime_array[i++] = travel->data->arrival_time;
-		travel = travel->next;
-	}
-	i = 1;
 	/* Keep running until we have loaded all process from the input file
 	 * and there is no process in ready queue */
 	while (!load_done || !empty(&ready_queue)) {
 		/* Pickup the process from the queue */
-		struct pcb_t * proc = de_queue_by_priority(&ready_queue,timestamp);
-		
+		struct pcb_t * proc = get_proc_by_priority(&ready_queue,timestamp);
+		// struct pcb_t * proc = de_queue(&ready_queue);
 		if (proc == NULL) {
 			/* If there is no process in the queue then we
 			 * wait until the next time slice */
 			timestamp++;
 			usleep(TIME_UNIT);
 		}else{
+			struct pcb_t * next_proc = get_next_proc_by_priority(&ready_queue, proc->priority);
 			/* Execute the process */
 			int start = timestamp; 	// Save timestamp
 			int id = proc->pid;	// and PID for tracking
-			/* Decide the amount of time that CPU will spend
-			 * on the process and write it to 'exec_time'.
-			 * It should not exeed 'timeslot'.
-			*/
 			int exec_time = 0;
 
 			// TODO: Calculate exec_time from process's PCB
 			
 			// YOUR CODE HERE
-			
+			if(next_proc == NULL){
+				exec_time = proc->burst_time;
+			}
+			else{
+				if(proc->priority == next_proc->priority){
+					exec_time = proc->burst_time;
+				}
+				else if(proc->priority < next_proc->priority){
+					exec_time = next_proc->arrival_time-timestamp;
+				}
+			}
+			// exec_time = proc->burst_time;
 			/* Emulate the execution of the process by using
 			 * 'usleep()' function */
 			usleep(exec_time * TIME_UNIT);
@@ -61,15 +61,16 @@ void * cpu(void * arg) {
 			// TODO: Check if the process has terminated (i.e. its
 			// burst time is zero. If so, free its PCB. Otherwise,
 			// put its PCB back to the queue.
-			
+
+			proc->burst_time -= exec_time;
 			// YOUR CODE HERE
-			if(proc->burst_time == 0){
+			if(proc->burst_time <= 0){
 				free(proc);
 			}
 			else{
 				if(proc->priority > 0)
 					proc->priority--;
-				en_queue(&ready_queue, proc);
+				en_queue_head(&ready_queue, proc);
 			}
 			/* Track runtime status */
 			printf("%2d-%2d: Execute %d\n", start, timestamp, id);
@@ -89,6 +90,7 @@ void * loader(void * arg) {
 		/* Update timestamp and put the new process to ready queue */
 		timestamp += wastetime;
 		en_queue(&ready_queue, proc);
+		// printf("%d\n", ready_queue.tail->data->arrival_time);
 	}
 	/* We have no process to load */
 	load_done = 1;
@@ -101,7 +103,7 @@ void load_task() {
 	for (i = 0; i < num_proc; i++) {
 		struct pcb_t * proc =
 			(struct pcb_t *)malloc(sizeof(struct pcb_t));
-		scanf("%d %d\n", &proc->arrival_time, &proc->burst_time);
+		scanf("%d %d %d\n", &proc->arrival_time, &proc->burst_time,&proc->priority);
 		proc->pid = i;
 		en_queue(&in_queue, proc);
 	}
