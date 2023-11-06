@@ -18,11 +18,13 @@ static int timeslot; 	// The maximum amount of time a process is allowed
 // Emulate the CPU
 void * cpu(void * arg) {
 	int timestamp = 0;
+	int time = 0;
 	/* Keep running until we have loaded all process from the input file
 	 * and there is no process in ready queue */
 	while (!load_done || !empty(&ready_queue)) {
 		/* Pickup the process from the queue */
 		struct pcb_t * proc = get_proc_by_priority(&ready_queue,timestamp);
+
 		// struct pcb_t * proc = de_queue(&ready_queue);
 		if (proc == NULL) {
 			/* If there is no process in the queue then we
@@ -30,7 +32,14 @@ void * cpu(void * arg) {
 			timestamp++;
 			usleep(TIME_UNIT);
 		}else{
+			printf("----\n");
 			struct pcb_t * next_proc = get_next_proc_by_priority(&ready_queue, proc->priority);
+			// if(next_proc != NULL)
+			// 	printf("proc : %d, next proc: %d", proc->pid, next_proc->pid);
+			// else{
+			// 	printf("proc : %d, next proc: null", proc->pid);
+			// }
+			// printf("\n");
 			/* Execute the process */
 			int start = timestamp; 	// Save timestamp
 			int id = proc->pid;	// and PID for tracking
@@ -76,6 +85,7 @@ void * cpu(void * arg) {
 			printf("%2d-%2d: Execute %d\n", start, timestamp, id);
 		}
 	}
+	return NULL;
 }
 
 // Emulate the loader
@@ -94,6 +104,7 @@ void * loader(void * arg) {
 	}
 	/* We have no process to load */
 	load_done = 1;
+	return NULL;
 }
 
 /* Read the list of process to be executed from stdin */
