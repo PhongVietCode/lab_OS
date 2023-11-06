@@ -49,6 +49,7 @@ struct pcb_t * get_proc_by_priority(struct pqueue_t* q,int timestamp){
 		return NULL;
 	}
 	int priority = -1;
+	int arr_time = 0;
 	struct qitem_t * travel = q->head;
 	struct qitem_t * res = NULL;
 	while(travel != NULL){
@@ -58,12 +59,22 @@ struct pcb_t * get_proc_by_priority(struct pqueue_t* q,int timestamp){
 				priority = travel->data->priority;
 				proc = travel->data;
 				res = travel;
+				arr_time = travel->data->arrival_time;
 			} 
 			else{
 				if(travel->data->priority < priority) {
 					priority = travel->data->priority;
 					proc = travel->data;
 					res = travel;
+					arr_time = travel->data->arrival_time;
+				}
+				else if(travel->data->priority == priority){
+					if(travel->data->arrival_time < arr_time){
+						priority = travel->data->priority;
+						proc = travel->data;
+						res = travel;
+						arr_time = travel->data->arrival_time;
+					}
 				}
 			}
 		}
